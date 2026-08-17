@@ -1,24 +1,30 @@
 import { createBrowserRouter } from "react-router-dom";
+import DashboardPage from "../features/dashboard/pages/DashboardPage";
+import AppLayout from "../components/layout/AppLayout";
+import EmployeesPage from "../features/employees/pages/EmployeesPage";
+import LeavePage from "../features/leave/pages/LeavePage";
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <div></div>,
-  },
-  {
-    path: "/login",
-    element: <div>Login</div>,
-  },
-  {
-    path: "/dashboard",
-    element: <div>Dashboard</div>,
-  },
-  {
-    path: "/employees",
-    element: <div>Employees</div>,
-  },
-  {
-    path: "/leave",
-    element: <div>Leave Management</div>,
+    element: <AppLayout />,
+    children: [
+      {
+        index: true,
+        element: <DashboardPage />,
+      },
+      {
+        path: "dashboard",
+        element: <DashboardPage />,
+      },
+      {
+        path: "employees",
+        element: <EmployeesPage />,
+      },
+      {
+        path: "leave",
+        element: <LeavePage />,
+      },
+    ],
   },
 ]);
