@@ -1,15 +1,34 @@
-import { Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
+import EmployeeTable from "../components/EmployeeTable";
+import { mockEmployees } from "../data/mockEmployees";
 
 export default function EmployeesPage() {
   return (
-    <>
-      <Typography variant="h4" sx={{ fontWeight: 700 }}>
-        Employees
-      </Typography>
+    <Box>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 700 }}>
+            Employees
+          </Typography>
+          <Typography color="text.secondary" sx={{ mt: 1 }}>
+            Manage employees, departments, roles and information
+          </Typography>
+        </Box>
+        <Box>
+          <Button variant="contained" color="primary">
+            Add Employee
+          </Button>
+        </Box>
+      </Box>
 
-      <Typography color="text.secondary" sx={{ mt: 1 }}>
-        Employee management will be built here.
-      </Typography>
-    </>
+      <EmployeeTable employees={mockEmployees} />
+    </Box>
   );
 }
