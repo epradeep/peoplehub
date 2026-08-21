@@ -6,7 +6,8 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import type { Employee, EmployeeStatus } from "../types/employee";
-import { Box, Button, Chip } from "@mui/material";
+import { Box, Button, Chip, TableSortLabel } from "@mui/material";
+import { useState } from "react";
 
 interface EmployeeTableProps {
   employees: Employee[];
@@ -20,7 +21,32 @@ const statusColors: Record<EmployeeStatus, StatusColor> = {
   Terminated: "error",
 };
 
+type SortField = "firstName" | "joiningDate";
+
 export default function EmployeeTable({ employees }: EmployeeTableProps) {
+  const [sortField, setSortField] = useState<SortField>("firstName");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+
+  const handleSorted = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  const sortedEmployees = [...employees].sort((a, b) => {
+    let comparison = 0;
+    if (sortField === "firstName") {
+      comparison = a.firstName.localeCompare(b.firstName);
+    } else if (sortField === "joiningDate") {
+      comparison =
+        new Date(a.joiningDate).getTime() - new Date(b.joiningDate).getTime();
+    }
+    return sortDirection === "asc" ? comparison : -comparison;
+  });
+
   const formatDate = (date: string) => {
     const current = new Date(date);
     const customFormat = new Intl.DateTimeFormat("en-IN", {
@@ -44,11 +70,27 @@ export default function EmployeeTable({ employees }: EmployeeTableProps) {
           >
             <TableRow>
               <TableCell align="left">Employee Code</TableCell>
-              <TableCell align="left">Employee Name</TableCell>
+              <TableCell align="left">
+                <TableSortLabel
+                  active={sortField === "firstName"}
+                  direction={sortDirection}
+                  onClick={() => handleSorted("firstName")}
+                >
+                  Employee Name
+                </TableSortLabel>
+              </TableCell>
               <TableCell align="left">Email</TableCell>
               <TableCell align="left">Department</TableCell>
               <TableCell align="left">Designation</TableCell>
-              <TableCell align="left">Joining Date</TableCell>
+              <TableCell align="left">
+                <TableSortLabel
+                  active={sortField === "joiningDate"}
+                  direction={sortDirection}
+                  onClick={() => handleSorted("joiningDate")}
+                >
+                  Joining Date
+                </TableSortLabel>
+              </TableCell>
               <TableCell align="center">Status</TableCell>
               <TableCell align="center">Actions</TableCell>
             </TableRow>
@@ -61,7 +103,7 @@ export default function EmployeeTable({ employees }: EmployeeTableProps) {
                 </TableCell>
               </TableRow>
             ) : (
-              employees.map((employee) => (
+              sortedEmployees.map((employee) => (
                 <TableRow
                   key={employee.id}
                   sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
