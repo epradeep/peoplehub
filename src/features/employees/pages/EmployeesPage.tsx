@@ -3,29 +3,15 @@ import EmployeeTable from "../components/EmployeeTable";
 import { mockEmployees } from "../data/mockEmployees";
 import EmployeeToolbar from "../components/EmployeeToolbar";
 import { useState } from "react";
+import type { EmployeeStatus } from "../types/employee";
 
 export default function EmployeesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDepartment, setSelectedDepartment] =
     useState("All Departments");
-  const [selectedStatus, setSelectedStatus] = useState("All Statuses");
-
-  const search = searchTerm.toLowerCase().trim();
-  const filteredEmployees = mockEmployees.filter(
-    (employee) =>
-      (employee.firstName.toLowerCase().includes(search) ||
-        employee.lastName.toLowerCase().includes(search) ||
-        employee.email.toLowerCase().includes(search) ||
-        employee.employeeCode.toLowerCase().includes(search) ||
-        employee.department.toLowerCase().includes(search) ||
-        employee.designation.toLowerCase().includes(search)) &&
-      (selectedDepartment === "All Departments"
-        ? true
-        : employee.department === selectedDepartment) &&
-      (selectedStatus === "All Statuses"
-        ? true
-        : employee.status === selectedStatus),
-  );
+  const [selectedStatus, setSelectedStatus] = useState<
+    EmployeeStatus | "All Statuses"
+  >("All Statuses");
 
   return (
     <Box>
@@ -60,7 +46,12 @@ export default function EmployeesPage() {
         onStatusChange={setSelectedStatus}
       />
 
-      <EmployeeTable employees={filteredEmployees} />
+      <EmployeeTable
+        employees={mockEmployees}
+        searchTerm={searchTerm}
+        department={selectedDepartment}
+        status={selectedStatus}
+      />
     </Box>
   );
 }

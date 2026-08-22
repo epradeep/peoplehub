@@ -6,11 +6,20 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import type { Employee, EmployeeStatus } from "../types/employee";
-import { Box, Button, Chip, TableSortLabel } from "@mui/material";
-import { useState } from "react";
+import {
+  Box,
+  Button,
+  Chip,
+  TablePagination,
+  TableSortLabel,
+} from "@mui/material";
+import { useEmployeeTable } from "../hooks/useEmployeeTable";
 
 interface EmployeeTableProps {
   employees: Employee[];
+  searchTerm: string;
+  department: string;
+  status: EmployeeStatus | "All Statuses";
 }
 type StatusColor = "success" | "default" | "warning" | "error";
 
@@ -21,32 +30,25 @@ const statusColors: Record<EmployeeStatus, StatusColor> = {
   Terminated: "error",
 };
 
-type SortField = "firstName" | "joiningDate";
+export default function EmployeeTable({
+  employees,
+  searchTerm,
+  department,
+  status,
+}: EmployeeTableProps) {
+  const {
+    sortField,
+    sortDirection,
+    handleSorted,
+    currentPage,
+    rowsPerPage,
+    handleChangePage,
+    handleChangeRowsPerPage,
+    totalCount,
+    paginatedEmployees,
+  } = useEmployeeTable(employees, { searchTerm, department, status });
 
-export default function EmployeeTable({ employees }: EmployeeTableProps) {
-  const [sortField, setSortField] = useState<SortField>("firstName");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-
-  const handleSorted = (field: SortField) => {
-    if (sortField === field) {
-      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
-    } else {
-      setSortField(field);
-      setSortDirection("asc");
-    }
-  };
-
-  const sortedEmployees = [...employees].sort((a, b) => {
-    let comparison = 0;
-    if (sortField === "firstName") {
-      comparison = a.firstName.localeCompare(b.firstName);
-    } else if (sortField === "joiningDate") {
-      comparison =
-        new Date(a.joiningDate).getTime() - new Date(b.joiningDate).getTime();
-    }
-    return sortDirection === "asc" ? comparison : -comparison;
-  });
-
+  //formatDate
   const formatDate = (date: string) => {
     const current = new Date(date);
     const customFormat = new Intl.DateTimeFormat("en-IN", {
@@ -72,9 +74,9 @@ export default function EmployeeTable({ employees }: EmployeeTableProps) {
               <TableCell align="left">Employee Code</TableCell>
               <TableCell align="left">
                 <TableSortLabel
-                  active={sortField === "firstName"}
+                  active={sortField === "fullName"}
                   direction={sortDirection}
-                  onClick={() => handleSorted("firstName")}
+                  onClick={() => handleSorted("fullName")}
                 >
                   Employee Name
                 </TableSortLabel>
@@ -96,14 +98,14 @@ export default function EmployeeTable({ employees }: EmployeeTableProps) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {employees.length === 0 ? (
+            {totalCount === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} align="center">
                   No employees found.
                 </TableCell>
               </TableRow>
             ) : (
-              sortedEmployees.map((employee) => (
+              paginatedEmployees.map((employee) => (
                 <TableRow
                   key={employee.id}
                   sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
@@ -143,6 +145,15 @@ export default function EmployeeTable({ employees }: EmployeeTableProps) {
           </TableBody>
         </Table>
       </TableContainer>
+      <TablePagination
+        component="div"
+        count={totalCount}
+        page={currentPage}
+        onPageChange={handleChangePage}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        rowsPerPageOptions={[5, 10, 20]}
+      />
     </Paper>
   );
 }

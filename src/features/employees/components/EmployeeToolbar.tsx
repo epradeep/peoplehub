@@ -6,14 +6,15 @@ import {
   Select,
   TextField,
 } from "@mui/material";
+import type { EmployeeStatus } from "../types/employee";
 
 interface EmployeeToolbarProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
   selectedDepartment: string;
   onDepartmentChange: (value: string) => void;
-  selectedStatus: string;
-  onStatusChange: (value: string) => void;
+  selectedStatus: EmployeeStatus | "All Statuses";
+  onStatusChange: (value: EmployeeStatus | "All Statuses") => void;
 }
 export default function EmployeeToolbar({
   searchTerm,
