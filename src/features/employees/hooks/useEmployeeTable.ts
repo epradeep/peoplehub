@@ -56,7 +56,6 @@ export function useEmployeeTable(
   const sortedEmployees = [...filteredEmployees].sort((a, b) => {
     let comparison = 0;
     if (sortField === "fullName") {
-      //   comparison = a.firstName.localeCompare(b.firstName);
       const nameA = `${a.firstName} ${a.lastName}`;
       const nameB = `${b.firstName} ${b.lastName}`;
 

@@ -58,7 +58,6 @@ export default function EmployeeToolbar({
         >
           <MenuItem value="All Departments">All Departments</MenuItem>
           <MenuItem value="Engineering">Engineering</MenuItem>
-          <MenuItem value="HR">HR</MenuItem>
           <MenuItem value="Finance">Finance</MenuItem>
           <MenuItem value="Sales">Sales</MenuItem>
           <MenuItem value="Marketing">Marketing</MenuItem>
