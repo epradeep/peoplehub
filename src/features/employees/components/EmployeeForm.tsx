@@ -9,6 +9,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import {
   Box,
   FormControl,
+  FormHelperText,
   Grid,
   InputLabel,
   MenuItem,
@@ -36,6 +37,8 @@ interface EmployeeFormProps {
 
 type EmployeeFormData = Omit<Employee, "id" | "employeeCode">;
 
+type FormErrors = Partial<Record<keyof EmployeeFormData, string>>;
+
 const initialFormData: EmployeeFormData = {
   firstName: "",
   lastName: "",
@@ -54,11 +57,19 @@ export default function EmployeeForm({
 }: EmployeeFormProps) {
   const [formData, setFormData] = useState<EmployeeFormData>(initialFormData);
 
+  const [errors, setErrors] = useState<FormErrors>({});
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+    }));
+
+    //Remove error when correcting the form feild
+    setErrors((prev) => ({
+      ...prev,
+      [name]: "",
     }));
   };
 
@@ -68,22 +79,75 @@ export default function EmployeeForm({
       ...prev,
       [name]: value,
     }));
+
+    setErrors((prev) => ({
+      ...prev,
+      [name]: "",
+    }));
+  };
+
+  //form validation
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = "First name is required";
+    }
+
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = "Last name is required";
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      newErrors.email = "Enter a valid email address";
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = "Phone number is required";
+    } else if (!/^[0-9+\-\s()]{7,20}$/.test(formData.phone.trim())) {
+      newErrors.phone = "Enter a valid phone number";
+    }
+
+    if (!formData.department.trim()) {
+      newErrors.department = "Department is required";
+    }
+
+    if (!formData.designation.trim()) {
+      newErrors.designation = "Designation is required";
+    }
+
+    if (!formData.joiningDate.trim()) {
+      newErrors.joiningDate = "Joining date is required";
+    }
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
   };
 
   //form submission
   const handleSubmit = () => {
+    if (!validateForm()) {
+      return;
+    }
+
     const newEmployee: Employee = {
       id: Date.now(),
       employeeCode: "",
       ...formData,
     };
     onSubmit(newEmployee);
-    setFormData(initialFormData);
+
+    //reset form and close dialog
+    handleClose();
   };
 
   const handleClose = () => {
     setFormData(initialFormData);
     onClose();
+    setErrors({});
   };
 
   return (
@@ -131,51 +195,67 @@ export default function EmployeeForm({
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
+                required
                 id="first-name"
                 name="firstName"
                 label="First Name"
                 value={formData.firstName}
                 onChange={handleChange}
+                error={Boolean(errors.firstName)}
+                helperText={errors.firstName}
               />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
+                required
                 id="last-name"
                 name="lastName"
                 label="Last Name"
                 value={formData.lastName}
                 onChange={handleChange}
+                error={Boolean(errors.lastName)}
+                helperText={errors.lastName}
               />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
+                required
                 id="email"
                 name="email"
                 label="Email"
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
+                error={Boolean(errors.email)}
+                helperText={errors.email}
               />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
+                required
                 id="phone"
                 name="phone"
                 label="Phone"
                 type="tel"
                 value={formData.phone}
                 onChange={handleChange}
+                error={Boolean(errors.phone)}
+                helperText={errors.phone}
               />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6 }}>
-              <FormControl fullWidth>
+              <FormControl
+                fullWidth
+                required
+                error={Boolean(errors.department)}
+              >
                 <InputLabel id="department-label">Department</InputLabel>
 
                 <Select
@@ -194,11 +274,18 @@ export default function EmployeeForm({
                   <MenuItem value="Sales">Sales</MenuItem>
                   <MenuItem value="Marketing">Marketing</MenuItem>
                 </Select>
+                {errors.department && (
+                  <FormHelperText>{errors.department}</FormHelperText>
+                )}
               </FormControl>
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6 }}>
-              <FormControl fullWidth>
+              <FormControl
+                fullWidth
+                required
+                error={Boolean(errors.designation)}
+              >
                 <InputLabel id="designation-label">Designation</InputLabel>
 
                 <Select
@@ -225,12 +312,16 @@ export default function EmployeeForm({
                     Marketing Specialist
                   </MenuItem>
                 </Select>
+                {errors.designation && (
+                  <FormHelperText>{errors.designation}</FormHelperText>
+                )}
               </FormControl>
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
+                required
                 id="joining-date"
                 name="joiningDate"
                 label="Joining Date"
@@ -242,6 +333,8 @@ export default function EmployeeForm({
                 }}
                 value={formData.joiningDate}
                 onChange={handleChange}
+                error={Boolean(errors.joiningDate)}
+                helperText={errors.joiningDate}
               />
             </Grid>
 
