@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import type { Employee, EmployeeStatus } from "../types/employee";
+import type { DepartmentFilter } from "../constants/employeeOptions";
 
 type SortField = "fullName" | "joiningDate";
 interface EmployeeFilters {
   searchTerm: string;
-  department: string;
+  department: DepartmentFilter;
   status: EmployeeStatus | "All Statuses";
 }
 

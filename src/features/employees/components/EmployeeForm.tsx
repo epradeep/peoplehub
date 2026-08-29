@@ -17,8 +17,9 @@ import {
   TextField,
   type SelectChangeEvent,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Employee } from "../types/employee";
+import { departments, designations } from "../constants/employeeOptions";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -33,6 +34,7 @@ interface EmployeeFormProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (newEmployee: Employee) => void;
+  editEmployee?: Employee | null;
 }
 
 type EmployeeFormData = Omit<Employee, "id" | "employeeCode">;
@@ -54,10 +56,29 @@ export default function EmployeeForm({
   open,
   onClose,
   onSubmit,
+  editEmployee,
 }: EmployeeFormProps) {
   const [formData, setFormData] = useState<EmployeeFormData>(initialFormData);
 
   const [errors, setErrors] = useState<FormErrors>({});
+
+  useEffect(() => {
+    if (editEmployee) {
+      setFormData({
+        firstName: editEmployee.firstName,
+        lastName: editEmployee.lastName,
+        email: editEmployee.email,
+        phone: editEmployee.phone,
+        department: editEmployee.department,
+        designation: editEmployee.designation,
+        joiningDate: editEmployee.joiningDate,
+        status: editEmployee.status,
+      });
+    } else {
+      setFormData(initialFormData);
+    }
+    setErrors({});
+  }, [editEmployee, open]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -134,14 +155,11 @@ export default function EmployeeForm({
     }
 
     const newEmployee: Employee = {
-      id: Date.now(),
-      employeeCode: "",
+      id: editEmployee ? editEmployee.id : Date.now(),
+      employeeCode: editEmployee ? editEmployee.employeeCode : "",
       ...formData,
     };
     onSubmit(newEmployee);
-
-    //reset form and close dialog
-    handleClose();
   };
 
   const handleClose = () => {
@@ -159,7 +177,7 @@ export default function EmployeeForm({
       maxWidth="md"
     >
       <DialogTitle sx={{ m: 0, p: 2 }} id="employee-dialog-title">
-        Add Employee
+        {editEmployee ? "Edit Employee" : "Add Employee"}
       </DialogTitle>
 
       <IconButton
@@ -188,7 +206,7 @@ export default function EmployeeForm({
                 disabled
                 id="employee-code"
                 label="Employee Code"
-                value="Auto-generated"
+                value={editEmployee?.employeeCode || "Auto-generated"}
               />
             </Grid>
 
@@ -266,13 +284,11 @@ export default function EmployeeForm({
                   value={formData.department}
                   onChange={handleSelectChange}
                 >
-                  <MenuItem value="">
-                    <em>Select Department</em>
-                  </MenuItem>
-                  <MenuItem value="Engineering">Engineering</MenuItem>
-                  <MenuItem value="Finance">Finance</MenuItem>
-                  <MenuItem value="Sales">Sales</MenuItem>
-                  <MenuItem value="Marketing">Marketing</MenuItem>
+                  {departments.map((department) => (
+                    <MenuItem key={department} value={department}>
+                      {department}
+                    </MenuItem>
+                  ))}
                 </Select>
                 {errors.department && (
                   <FormHelperText>{errors.department}</FormHelperText>
@@ -296,21 +312,11 @@ export default function EmployeeForm({
                   value={formData.designation}
                   onChange={handleSelectChange}
                 >
-                  <MenuItem value="">
-                    <em>Select Designation</em>
-                  </MenuItem>
-
-                  <MenuItem value="Senior React Developer">
-                    Senior React Developer
-                  </MenuItem>
-                  <MenuItem value="HR Manager">HR Manager</MenuItem>
-                  <MenuItem value="Financial Analyst">
-                    Financial Analyst
-                  </MenuItem>
-                  <MenuItem value="Sales Executive">Sales Executive</MenuItem>
-                  <MenuItem value="Marketing Specialist">
-                    Marketing Specialist
-                  </MenuItem>
+                  {designations.map((designation) => (
+                    <MenuItem key={designation} value={designation}>
+                      {designation}
+                    </MenuItem>
+                  ))}
                 </Select>
                 {errors.designation && (
                   <FormHelperText>{errors.designation}</FormHelperText>
@@ -365,7 +371,7 @@ export default function EmployeeForm({
         <Button onClick={handleClose}>Cancel</Button>
 
         <Button variant="contained" onClick={handleSubmit}>
-          Add Employee
+          {editEmployee ? "Update Employee" : "Add Employee"}
         </Button>
       </DialogActions>
     </BootstrapDialog>

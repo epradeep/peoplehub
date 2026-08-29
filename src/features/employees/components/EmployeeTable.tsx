@@ -14,12 +14,15 @@ import {
   TableSortLabel,
 } from "@mui/material";
 import { useEmployeeTable } from "../hooks/useEmployeeTable";
+import type { DepartmentFilter } from "../constants/employeeOptions";
 
 interface EmployeeTableProps {
   employees: Employee[];
   searchTerm: string;
-  department: string;
+  department: DepartmentFilter;
   status: EmployeeStatus | "All Statuses";
+  onEdit: (employee: Employee) => void;
+  onDelete: (id: number) => void;
 }
 type StatusColor = "success" | "default" | "warning" | "error";
 
@@ -35,6 +38,8 @@ export default function EmployeeTable({
   searchTerm,
   department,
   status,
+  onEdit,
+  onDelete,
 }: EmployeeTableProps) {
   const {
     sortField,
@@ -50,12 +55,15 @@ export default function EmployeeTable({
 
   //formatDate
   const formatDate = (date: string) => {
-    const current = new Date(date);
+    if (!date) return "";
+
+    const [year, month, day] = date.split("-");
+
     const customFormat = new Intl.DateTimeFormat("en-IN", {
       day: "2-digit",
       month: "short",
       year: "numeric",
-    }).format(current);
+    }).format(new Date(Number(year), Number(month) - 1, Number(day)));
     return customFormat;
   };
 
@@ -131,11 +139,19 @@ export default function EmployeeTable({
                     <Box
                       sx={{ display: "flex", gap: 1, justifyContent: "center" }}
                     >
-                      <Button variant="outlined" size="small">
-                        View
-                      </Button>
-                      <Button variant="contained" size="small">
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => onEdit(employee)}
+                      >
                         Edit
+                      </Button>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => onDelete(employee.id)}
+                      >
+                        Delete
                       </Button>
                     </Box>
                   </TableCell>

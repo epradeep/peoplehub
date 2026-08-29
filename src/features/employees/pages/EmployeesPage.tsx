@@ -6,37 +6,90 @@ import { useState } from "react";
 import type { Employee, EmployeeStatus } from "../types/employee";
 import EmployeeForm from "../components/EmployeeForm";
 
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import type { DepartmentFilter } from "../constants/employeeOptions";
+
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState(mockEmployees);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDepartment, setSelectedDepartment] =
-    useState("All Departments");
+  const [selectedDepartment, setSelectedDepartment] = useState<
+    DepartmentFilter | "All Departments"
+  >("All Departments");
+
   const [selectedStatus, setSelectedStatus] = useState<
     EmployeeStatus | "All Statuses"
   >("All Statuses");
-
+  const [editEmployee, setEditEmployee] = useState<Employee | null>(null);
   const [openForm, setOpenForm] = useState(false);
 
-  const handleClickOpen = () => setOpenForm(true);
-  const handleClose = () => setOpenForm(false);
+  const [deleteEmployee, setDeleteEmployee] = useState<Employee | null>(null);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
-  const handleAddEmployee = (employee: Employee) => {
-    setEmployees((prev) => {
-      const nextNumber =
-        prev.reduce((max, emp) => {
-          const number = Number(emp.employeeCode.replace("EMP", ""));
-          return Math.max(max, number);
-        }, 0) + 1;
-
-      const newEmployee: Employee = {
-        ...employee,
-        employeeCode: `EMP${String(nextNumber).padStart(3, "0")}`,
-      };
-
-      return [...prev, newEmployee];
-    });
+  const handleClickOpen = () => {
+    setEditEmployee(null);
+    setOpenForm(true);
+  };
+  const handleClose = () => {
     setOpenForm(false);
+    setEditEmployee(null);
+  };
+
+  //Add or Update employee
+  const handleSubmitEmployee = (employee: Employee) => {
+    if (editEmployee) {
+      setEmployees((prev) =>
+        prev.map((emp) => (emp.id === employee.id ? employee : emp)),
+      );
+    } else {
+      setEmployees((prev) => {
+        const nextNumber =
+          prev.reduce((max, emp) => {
+            const number = Number(emp.employeeCode.replace("/^EMP/", ""));
+            return Number.isNaN(number) ? max : Math.max(max, number);
+          }, 0) + 1;
+
+        const newEmployee: Employee = {
+          ...employee,
+          employeeCode: `EMP${String(nextNumber).padStart(3, "0")}`,
+        };
+
+        return [...prev, newEmployee];
+      });
+    }
+
+    handleClose();
+  };
+
+  const handleEditEmployee = (employee: Employee) => {
+    setEditEmployee(employee);
+    setOpenForm(true);
+  };
+
+  //delete employee
+  const handleDeleteEmployee = (id: number) => {
+    const employee = employees.find((emp) => emp.id === id);
+    if (employee) {
+      setDeleteEmployee(employee);
+      setOpenDeleteDialog(true);
+    }
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deleteEmployee) {
+      return;
+    }
+    setEmployees((prev) => prev.filter((emp) => emp.id !== deleteEmployee.id));
+    setDeleteEmployee(null);
+    setOpenDeleteDialog(false);
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteEmployee(null);
+    setOpenDeleteDialog(false);
   };
 
   return (
@@ -77,13 +130,51 @@ export default function EmployeesPage() {
         searchTerm={searchTerm}
         department={selectedDepartment}
         status={selectedStatus}
+        onEdit={handleEditEmployee}
+        onDelete={handleDeleteEmployee}
       />
 
       <EmployeeForm
         open={openForm}
         onClose={handleClose}
-        onSubmit={handleAddEmployee}
+        onSubmit={handleSubmitEmployee}
+        editEmployee={editEmployee}
       />
+
+      <Dialog
+        open={openDeleteDialog}
+        onClose={handleCancelDelete}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 600 }}>Delete Employee</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this employee?
+          </Typography>
+          <Typography sx={{ mt: 1, fontWeight: 600 }}>
+            {deleteEmployee?.firstName} {deleteEmployee?.lastName}
+          </Typography>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button
+              onClick={handleCancelDelete}
+              variant="outlined"
+              color="inherit"
+              size="small"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmDelete}
+              variant="contained"
+              color="error"
+              size="small"
+            >
+              Delete
+            </Button>
+          </DialogActions>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }

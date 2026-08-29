@@ -7,12 +7,16 @@ import {
   TextField,
 } from "@mui/material";
 import type { EmployeeStatus } from "../types/employee";
+import {
+  departments,
+  type DepartmentFilter,
+} from "../constants/employeeOptions";
 
 interface EmployeeToolbarProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
-  selectedDepartment: string;
-  onDepartmentChange: (value: string) => void;
+  selectedDepartment: DepartmentFilter | "All Departments";
+  onDepartmentChange: (value: DepartmentFilter | "All Departments") => void;
   selectedStatus: EmployeeStatus | "All Statuses";
   onStatusChange: (value: EmployeeStatus | "All Statuses") => void;
 }
@@ -54,13 +58,16 @@ export default function EmployeeToolbar({
           id="department-select"
           label="Department"
           value={selectedDepartment}
-          onChange={(e) => onDepartmentChange(e.target.value)}
+          onChange={(e) =>
+            onDepartmentChange(e.target.value as DepartmentFilter)
+          }
         >
           <MenuItem value="All Departments">All Departments</MenuItem>
-          <MenuItem value="Engineering">Engineering</MenuItem>
-          <MenuItem value="Finance">Finance</MenuItem>
-          <MenuItem value="Sales">Sales</MenuItem>
-          <MenuItem value="Marketing">Marketing</MenuItem>
+          {departments.map((department) => (
+            <MenuItem key={department} value={department}>
+              {department}
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
       <FormControl fullWidth>
@@ -70,7 +77,9 @@ export default function EmployeeToolbar({
           id="status-select"
           label="Status"
           value={selectedStatus}
-          onChange={(e) => onStatusChange(e.target.value)}
+          onChange={(e) =>
+            onStatusChange(e.target.value as EmployeeStatus | "All Statuses")
+          }
         >
           <MenuItem value="All Statuses">All Statuses</MenuItem>
           <MenuItem value="Active">Active</MenuItem>
