@@ -2,7 +2,7 @@ import { Box, Button, Typography } from "@mui/material";
 import EmployeeTable from "../components/EmployeeTable";
 import { mockEmployees } from "../data/mockEmployees";
 import EmployeeToolbar from "../components/EmployeeToolbar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Employee, EmployeeStatus } from "../types/employee";
 import EmployeeForm from "../components/EmployeeForm";
 
@@ -12,8 +12,26 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import type { DepartmentFilter } from "../constants/employeeOptions";
 
+const EMPLOYEES_STORAGE_KEY = "employeesData";
 export default function EmployeesPage() {
-  const [employees, setEmployees] = useState(mockEmployees);
+  const [employees, setEmployees] = useState<Employee[]>(() => {
+    try {
+      const storedEmployees = localStorage.getItem(EMPLOYEES_STORAGE_KEY);
+      if (!storedEmployees) {
+        return mockEmployees;
+      }
+
+      const parsedEmployees: unknown = JSON.parse(storedEmployees);
+      if (!Array.isArray(parsedEmployees)) {
+        console.warn("Invalid employees data in localStorage.");
+        return mockEmployees;
+      }
+      return parsedEmployees as Employee[];
+    } catch (error) {
+      console.error("Failed to parse employees from localStorage:", error);
+      return mockEmployees;
+    }
+  });
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState<
@@ -28,6 +46,14 @@ export default function EmployeesPage() {
 
   const [deleteEmployee, setDeleteEmployee] = useState<Employee | null>(null);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(EMPLOYEES_STORAGE_KEY, JSON.stringify(employees));
+    } catch (error) {
+      console.error("Failed to save employees to localStorage", error);
+    }
+  }, [employees]);
 
   const handleClickOpen = () => {
     setEditEmployee(null);
@@ -48,15 +74,15 @@ export default function EmployeesPage() {
       setEmployees((prev) => {
         const nextNumber =
           prev.reduce((max, emp) => {
-            const number = Number(emp.employeeCode.replace("/^EMP/", ""));
-            return Number.isNaN(number) ? max : Math.max(max, number);
+            const match = emp.employeeCode.match(/^EMP(\d+)$/);
+            const number = match ? Number(match[1]) : 0;
+            return Math.max(max, number);
           }, 0) + 1;
 
         const newEmployee: Employee = {
           ...employee,
           employeeCode: `EMP${String(nextNumber).padStart(3, "0")}`,
         };
-
         return [...prev, newEmployee];
       });
     }
