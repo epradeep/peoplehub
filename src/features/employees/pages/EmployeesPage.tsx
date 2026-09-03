@@ -1,8 +1,15 @@
-import { Box, Button, Typography } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Button,
+  Snackbar,
+  Typography,
+  type SnackbarCloseReason,
+} from "@mui/material";
 import EmployeeTable from "../components/EmployeeTable";
 import { mockEmployees } from "../data/mockEmployees";
 import EmployeeToolbar from "../components/EmployeeToolbar";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type SyntheticEvent } from "react";
 import type { Employee, EmployeeStatus } from "../types/employee";
 import EmployeeForm from "../components/EmployeeForm";
 
@@ -47,6 +54,9 @@ export default function EmployeesPage() {
   const [deleteEmployee, setDeleteEmployee] = useState<Employee | null>(null);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
+  const [openAlert, setOpenAlert] = useState(false);
+  const [message, setMessage] = useState("");
+
   useEffect(() => {
     try {
       localStorage.setItem(EMPLOYEES_STORAGE_KEY, JSON.stringify(employees));
@@ -70,6 +80,8 @@ export default function EmployeesPage() {
       setEmployees((prev) =>
         prev.map((emp) => (emp.id === employee.id ? employee : emp)),
       );
+      setMessage("Employee updated successfully.");
+      setOpenAlert(true);
     } else {
       setEmployees((prev) => {
         const nextNumber =
@@ -85,6 +97,8 @@ export default function EmployeesPage() {
         };
         return [...prev, newEmployee];
       });
+      setMessage("Employee added successfully.");
+      setOpenAlert(true);
     }
 
     handleClose();
@@ -109,6 +123,8 @@ export default function EmployeesPage() {
       return;
     }
     setEmployees((prev) => prev.filter((emp) => emp.id !== deleteEmployee.id));
+    setMessage("Employee deleted successfully.");
+    setOpenAlert(true);
     setDeleteEmployee(null);
     setOpenDeleteDialog(false);
   };
@@ -116,6 +132,18 @@ export default function EmployeesPage() {
   const handleCancelDelete = () => {
     setDeleteEmployee(null);
     setOpenDeleteDialog(false);
+  };
+
+  //alert messages
+  const handleSnackbarClose = (
+    event?: SyntheticEvent | Event,
+    reason?: SnackbarCloseReason,
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpenAlert(false);
   };
 
   return (
@@ -141,7 +169,6 @@ export default function EmployeesPage() {
           </Button>
         </Box>
       </Box>
-
       <EmployeeToolbar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
@@ -150,7 +177,6 @@ export default function EmployeesPage() {
         selectedStatus={selectedStatus}
         onStatusChange={setSelectedStatus}
       />
-
       <EmployeeTable
         employees={employees}
         searchTerm={searchTerm}
@@ -159,14 +185,12 @@ export default function EmployeesPage() {
         onEdit={handleEditEmployee}
         onDelete={handleDeleteEmployee}
       />
-
       <EmployeeForm
         open={openForm}
         onClose={handleClose}
         onSubmit={handleSubmitEmployee}
         editEmployee={editEmployee}
       />
-
       <Dialog
         open={openDeleteDialog}
         onClose={handleCancelDelete}
@@ -201,6 +225,23 @@ export default function EmployeesPage() {
           </DialogActions>
         </DialogContent>
       </Dialog>
+
+      {/*Display alert meassage*/}
+      <Snackbar
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        open={openAlert}
+        autoHideDuration={5000}
+        onClose={handleSnackbarClose}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

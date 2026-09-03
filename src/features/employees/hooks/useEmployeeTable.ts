@@ -5,7 +5,7 @@ import type { DepartmentFilter } from "../constants/employeeOptions";
 type SortField = "fullName" | "joiningDate";
 interface EmployeeFilters {
   searchTerm: string;
-  department: DepartmentFilter;
+  department: DepartmentFilter | "All Departments";
   status: EmployeeStatus | "All Statuses";
 }
 

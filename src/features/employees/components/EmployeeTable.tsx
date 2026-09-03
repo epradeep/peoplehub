@@ -19,7 +19,7 @@ import type { DepartmentFilter } from "../constants/employeeOptions";
 interface EmployeeTableProps {
   employees: Employee[];
   searchTerm: string;
-  department: DepartmentFilter;
+  department: DepartmentFilter | "All Departments";
   status: EmployeeStatus | "All Statuses";
   onEdit: (employee: Employee) => void;
   onDelete: (id: number) => void;
